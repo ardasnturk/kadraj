@@ -1,6 +1,6 @@
 import AppKit
 
-/// Stacks floating previews in the bottom-left corner of the screen and routes their buttons.
+/// Opens floating previews next to the mouse pointer and routes their buttons.
 @MainActor
 final class PreviewManager {
     weak var handler: CaptureHandling?
@@ -11,7 +11,10 @@ final class PreviewManager {
         let panel = PreviewPanel(capture: capture, manager: self)
         panels.insert(panel, at: 0)
         while panels.count > maxVisible, let oldest = panels.last { dismiss(oldest) }
-        layout(entering: panel)
+        let frame = frameNearMouse(size: panel.frame.size)
+        // Slide in slightly from below.
+        panel.setFrame(frame.offsetBy(dx: 0, dy: -12), display: false)
+        panel.targetFrame = frame
         panel.present()
     }
 
@@ -19,26 +22,23 @@ final class PreviewManager {
         guard let index = panels.firstIndex(where: { $0 === panel }) else { return }
         panels.remove(at: index)
         panel.fadeOut()
-        layout(entering: nil)
     }
 
-    /// Newest at the bottom, older ones pushed up.
-    private func layout(entering newPanel: PreviewPanel?) {
-        guard let visible = NSScreen.current?.visibleFrame else { return }
-        var y = visible.minY + 16
-        for panel in panels {
-            let frame = NSRect(origin: CGPoint(x: visible.minX + 16, y: y), size: panel.frame.size)
-            if panel === newPanel {
-                panel.setFrame(frame.offsetBy(dx: -24, dy: 0), display: false)
-                panel.targetFrame = frame
-            } else {
-                NSAnimationContext.runAnimationGroup { context in
-                    context.duration = 0.2
-                    panel.animator().setFrame(frame, display: true)
-                }
-            }
-            y += frame.height + 10
+    /// Just below and to the right of the pointer, flipped to the other side near screen edges,
+    /// so the panel never covers the spot that was just captured.
+    private func frameNearMouse(size: CGSize) -> NSRect {
+        let mouse = NSEvent.mouseLocation
+        let gap: CGFloat = 16
+        guard let visible = NSScreen.current?.visibleFrame else {
+            return NSRect(origin: mouse, size: size)
         }
+        var x = mouse.x + gap
+        if x + size.width > visible.maxX { x = mouse.x - gap - size.width }
+        var y = mouse.y - gap - size.height
+        if y < visible.minY { y = mouse.y + gap }
+        x = min(max(x, visible.minX + 8), visible.maxX - size.width - 8)
+        y = min(max(y, visible.minY + 8), visible.maxY - size.height - 8)
+        return NSRect(origin: CGPoint(x: x, y: y), size: size)
     }
 
     // MARK: - Actions
@@ -144,16 +144,18 @@ final class PreviewPanel: NSPanel {
         }
         effect.addSubview(thumbnail)
 
-        let buttons = NSStackView(views: [
+        let buttons = [
             button("pencil", "Edit", #selector(editClicked)),
             button("doc.on.doc", "Copy", #selector(copyClicked)),
             button("square.and.arrow.down", "Save", #selector(saveClicked)),
             button("text.viewfinder", "Copy Text (OCR)", #selector(textClicked)),
             button("pin", "Pin to Screen", #selector(pinClicked)),
-        ])
-        buttons.distribution = .fillEqually
-        buttons.frame = NSRect(x: 12, y: 8, width: inner, height: footerHeight)
-        effect.addSubview(buttons)
+        ]
+        let slot = inner / CGFloat(buttons.count)
+        for (i, button) in buttons.enumerated() {
+            button.frame = NSRect(x: 12 + CGFloat(i) * slot, y: 8, width: slot, height: footerHeight)
+            effect.addSubview(button)
+        }
 
         effect.addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
                                               owner: self))
