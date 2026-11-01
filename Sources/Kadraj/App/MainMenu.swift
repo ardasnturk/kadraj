@@ -26,12 +26,16 @@ enum MainMenu {
         _ = submenu("Kadraj", [
             item("About Kadraj", #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
             .separator(),
+            item("Settings…", #selector(AppDelegate.openSettings(_:)), ","),
+            .separator(),
             item("Hide Kadraj", #selector(NSApplication.hide(_:)), "h"),
             item("Quit Kadraj", #selector(NSApplication.terminate(_:)), "q"),
         ])
         _ = submenu("File", [
             item("Open…", #selector(AppDelegate.openImage(_:)), "o"),
             item("Open Image from Clipboard", #selector(AppDelegate.pasteImage(_:)), "v", [.command, .shift]),
+            .separator(),
+            item("Pin to Screen", #selector(EditorWindowController.pinToScreen(_:)), "p"),
             .separator(),
             item("Save", #selector(EditorWindowController.saveImage(_:)), "s"),
             item("Save As…", #selector(EditorWindowController.saveImageAs(_:)), "s", [.command, .shift]),
@@ -45,6 +49,7 @@ enum MainMenu {
             item("Redo", #selector(EditorWindowController.redoEdit(_:)), "z", [.command, .shift]),
             .separator(),
             item("Copy", #selector(EditorWindowController.copy(_:)), "c"),
+            item("Copy Text (OCR)", #selector(EditorWindowController.copyText(_:)), "c", [.command, .option]),
             item("Delete", #selector(EditorWindowController.delete(_:))),
             .separator(),
             item("Crop to Selection", #selector(EditorWindowController.cropToSelection(_:))),

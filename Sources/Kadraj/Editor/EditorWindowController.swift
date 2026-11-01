@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 
 final class EditorWindowController: NSWindowController, NSWindowDelegate, NSMenuItemValidation {
     var onClose: ((EditorWindowController) -> Void)?
+    private weak var handler: CaptureHandling?
 
     private let editorDocument: EditorDocument
     private let canvas: CanvasView
@@ -14,8 +15,9 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSMenu
     private let hud = NSTextField(labelWithString: "")
     private var hudTimer: Timer?
 
-    init(image: CGImage, pointScale: CGFloat) {
-        editorDocument = EditorDocument(image: image, pointScale: pointScale)
+    init(capture: Capture, handler: CaptureHandling?) {
+        self.handler = handler
+        editorDocument = EditorDocument(image: capture.image, pointScale: capture.pointScale)
         canvas = CanvasView(document: editorDocument)
         toolControl = NSSegmentedControl(
             images: Tool.allCases.map { Self.symbol($0.symbolName, $0.title) },
@@ -75,13 +77,10 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSMenu
         cropButton.bezelStyle = .texturedRounded
         cropButton.toolTip = "Crop to Selection (Return)"
 
-        let copyButton = NSButton(image: Self.symbol("doc.on.doc", "Copy (⌘C)"), target: self, action: #selector(copy(_:)))
-        copyButton.bezelStyle = .texturedRounded
-        copyButton.toolTip = "Copy (⌘C)"
-        let saveButton = NSButton(image: Self.symbol("square.and.arrow.down", "Save (⌘S)"), target: self,
-                                  action: #selector(saveImage(_:)))
-        saveButton.bezelStyle = .texturedRounded
-        saveButton.toolTip = "Save (⌘S)"
+        let textButton = toolbarButton("text.viewfinder", "Copy Text (⌥⌘C)", #selector(copyText(_:)))
+        let pinButton = toolbarButton("pin", "Pin to Screen (⌘P)", #selector(pinToScreen(_:)))
+        let copyButton = toolbarButton("doc.on.doc", "Copy (⌘C)", #selector(copy(_:)))
+        let saveButton = toolbarButton("square.and.arrow.down", "Save (⌘S)", #selector(saveImage(_:)))
 
         infoLabel.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
         infoLabel.textColor = .secondaryLabelColor
@@ -91,7 +90,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSMenu
         bar.spacing = 10
         bar.edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
         for view in [toolControl, colorWell, sizeControl, cropButton] { bar.addView(view, in: .leading) }
-        for view in [infoLabel, copyButton, saveButton] { bar.addView(view, in: .trailing) }
+        for view in [infoLabel, textButton, pinButton, copyButton, saveButton] { bar.addView(view, in: .trailing) }
 
         let separator = NSBox()
         separator.boxType = .separator
@@ -176,13 +175,10 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSMenu
     }
 
     @objc func saveImage(_ sender: Any?) {
-        guard let image = canvas.exportImage(),
-              let data = ImageExport.data(image, type: .png, pointScale: editorDocument.pointScale) else { return }
-        let folder = Settings.saveDirectory
-        let url = folder.appendingPathComponent("Kadraj \(Self.timestamp()).png")
+        guard let image = canvas.exportImage() else { return }
         do {
-            try data.write(to: url)
-            showHUD("Saved to \(folder.lastPathComponent)")
+            let url = try ImageExport.quickSave(image, pointScale: editorDocument.pointScale)
+            showHUD("Saved to \(url.deletingLastPathComponent().lastPathComponent)")
         } catch {
             presentError(error)
         }
@@ -192,7 +188,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSMenu
         guard let window, let image = canvas.exportImage() else { return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.png, .jpeg]
-        panel.nameFieldStringValue = "Kadraj \(Self.timestamp()).png"
+        panel.nameFieldStringValue = "Kadraj \(ImageExport.timestamp()).\(Settings.imageFormat.fileExtension)"
         panel.directoryURL = Settings.saveDirectory
         panel.beginSheetModal(for: window) { [weak self] response in
             guard let self, response == .OK, let url = panel.url else { return }
@@ -205,6 +201,18 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSMenu
                 presentError(error)
             }
         }
+    }
+
+    /// Pins the edited result (or just the selection) above all windows.
+    @objc func pinToScreen(_ sender: Any?) {
+        guard let image = canvas.exportImage() else { return }
+        handler?.pin(Capture(image: image, pointScale: editorDocument.pointScale))
+    }
+
+    /// Copies the text (or QR code) in the image, or in the selection when there is one.
+    @objc func copyText(_ sender: Any?) {
+        guard let image = canvas.exportImage() else { return }
+        handler?.recognizeText(in: Capture(image: image, pointScale: editorDocument.pointScale))
     }
 
     @objc func undoEdit(_ sender: Any?) { canvas.undo() }
@@ -232,10 +240,11 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSMenu
         NSImage(systemSymbolName: name, accessibilityDescription: description) ?? NSImage()
     }
 
-    private static func timestamp() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
-        return formatter.string(from: Date())
+    private func toolbarButton(_ symbol: String, _ title: String, _ action: Selector) -> NSButton {
+        let button = NSButton(image: Self.symbol(symbol, title), target: self, action: action)
+        button.bezelStyle = .texturedRounded
+        button.toolTip = title
+        return button
     }
 
     /// Fits the image at actual size when possible, on the screen under the mouse.

@@ -43,4 +43,23 @@ final class HotKeyManager {
         handlers[id] = handler
         return true
     }
+
+    func unregisterAll() {
+        refs.forEach { UnregisterEventHotKey($0) }
+        refs.removeAll()
+        handlers.removeAll()
+    }
+}
+
+/// State shared between the app delegate and the SwiftUI settings window.
+@MainActor
+final class AppState: ObservableObject {
+    static let shared = AppState()
+
+    /// Shortcuts that could not be registered because another app owns them.
+    @Published var failedShortcuts: Set<ShortcutAction> = []
+    /// Bumped whenever shortcuts are re-registered, so recorders refresh.
+    @Published var shortcutsVersion = 0
+    /// Called with `true` while a shortcut recorder listens, so the current shortcuts don't fire.
+    var onSuspendHotKeys: ((Bool) -> Void)?
 }

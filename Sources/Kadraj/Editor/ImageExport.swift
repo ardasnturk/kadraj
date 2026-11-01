@@ -25,6 +25,49 @@ enum ImageExport {
         return pasteboard.setData(png, forType: .png)
     }
 
+    /// Saves into the save folder in the preferred format, without overwriting existing files.
+    static func quickSave(_ image: CGImage, pointScale: CGFloat) throws -> URL {
+        let format = Settings.imageFormat
+        guard let data = data(image, type: format.type, pointScale: pointScale) else {
+            throw CocoaError(.fileWriteUnknown)
+        }
+        let folder = Settings.saveDirectory
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let url = uniqueURL(in: folder, base: "Kadraj \(timestamp())", fileExtension: format.fileExtension)
+        try data.write(to: url)
+        return url
+    }
+
+    /// Writes a PNG to a temporary folder, for dragging into other apps.
+    static func temporaryFile(_ image: CGImage, pointScale: CGFloat) -> URL? {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("Kadraj", isDirectory: true)
+        guard (try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)) != nil,
+              let data = data(image, type: .png, pointScale: pointScale) else { return nil }
+        let url = uniqueURL(in: folder, base: "Kadraj \(timestamp())", fileExtension: "png")
+        return (try? data.write(to: url)) != nil ? url : nil
+    }
+
+    static func timestamp() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
+        return formatter.string(from: Date())
+    }
+
+    private static func uniqueURL(in folder: URL, base: String, fileExtension: String) -> URL {
+        var url = folder.appendingPathComponent("\(base).\(fileExtension)")
+        var counter = 2
+        while FileManager.default.fileExists(atPath: url.path) {
+            url = folder.appendingPathComponent("\(base) (\(counter)).\(fileExtension)")
+            counter += 1
+        }
+        return url
+    }
+
+    static func copyString(_ string: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(string, forType: .string)
+    }
+
     /// - Returns: The image and its pixels-per-point scale, read from the file's DPI.
     static func loadImage(at url: URL) -> (CGImage, CGFloat)? {
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),

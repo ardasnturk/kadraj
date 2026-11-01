@@ -4,14 +4,27 @@ import Carbon.HIToolbox
 /// Shows the frozen screen on every display and lets the user drag out an area or pick a window.
 @MainActor
 final class AreaSelectionController {
+    enum Purpose { case capture, text }
+
+    /// A selected area, remembered for "Repeat Last Area".
+    struct Region {
+        let displayID: CGDirectDisplayID
+        /// In points, relative to the display's top-left corner.
+        let rect: CGRect
+        /// In Cocoa global coordinates.
+        let screenRect: CGRect
+    }
+
     enum Outcome {
-        case area(CGImage, pointScale: CGFloat)
+        /// `region` is `nil` when the whole display was taken.
+        case area(CGImage, pointScale: CGFloat, region: Region?)
         /// `fallback` is the window cut out of the frozen screen, used if capturing it on its own fails.
         case window(CapturableWindow, fallback: CGImage?, pointScale: CGFloat)
         case cancelled
     }
 
     let windows: [CapturableWindow]
+    let purpose: Purpose
     var windowMode: Bool {
         didSet { views.forEach { $0.windowModeChanged() } }
     }
@@ -21,11 +34,12 @@ final class AreaSelectionController {
     private var overlays: [NSWindow] = []
     private var views: [SelectionView] = []
 
-    init(shots: [DisplayShot], windows: [CapturableWindow], windowMode: Bool,
+    init(shots: [DisplayShot], windows: [CapturableWindow], windowMode: Bool, purpose: Purpose = .capture,
          completion: @escaping (Outcome) -> Void) {
         self.shots = shots
         self.windows = windows
-        self.windowMode = windowMode
+        self.windowMode = windowMode && purpose == .capture
+        self.purpose = purpose
         self.completion = completion
     }
 
@@ -108,11 +122,7 @@ private final class SelectionView: NSView {
         needsDisplay = true
     }
 
-    private func crop(_ rect: CGRect) -> CGImage? {
-        let s = pixelScale
-        let pixels = CGRect(x: rect.minX * s, y: rect.minY * s, width: rect.width * s, height: rect.height * s)
-        return shot.image.cropping(to: pixels.integral)
-    }
+    private func crop(_ rect: CGRect) -> CGImage? { shot.crop(rect) }
 
     // MARK: - Events
 
@@ -173,17 +183,19 @@ private final class SelectionView: NSView {
             needsDisplay = true
             return
         }
-        controller.finish(.area(image, pointScale: pixelScale))
+        let region = AreaSelectionController.Region(displayID: shot.displayID, rect: rect,
+                                                    screenRect: shot.screenRect(for: rect))
+        controller.finish(.area(image, pointScale: pixelScale, region: region))
     }
 
     override func keyDown(with event: NSEvent) {
         switch Int(event.keyCode) {
         case kVK_Escape:
             controller.finish(.cancelled)
-        case kVK_Space:
+        case kVK_Space where controller.purpose == .capture:
             controller.windowMode.toggle()
         case kVK_Return, kVK_ANSI_KeypadEnter:
-            controller.finish(.area(shot.image, pointScale: pixelScale))
+            controller.finish(.area(shot.image, pointScale: pixelScale, region: nil))
         default:
             super.keyDown(with: event)
         }
@@ -217,9 +229,13 @@ private final class SelectionView: NSView {
         }
 
         if mouse != nil, selection == nil {
-            let hint = controller.windowMode
-                ? "Click a window  ·  Space: area mode  ·  Esc: cancel"
-                : "Drag to select  ·  Space: window mode  ·  Return: full screen  ·  Esc: cancel"
+            let hint = if controller.purpose == .text {
+                "Drag over text to copy it  ·  Esc: cancel"
+            } else if controller.windowMode {
+                "Click a window  ·  Space: area mode  ·  Esc: cancel"
+            } else {
+                "Drag to select  ·  Space: window mode  ·  Return: full screen  ·  Esc: cancel"
+            }
             drawPill(hint, centeredAt: CGPoint(x: bounds.midX, y: bounds.maxY - 60))
         }
     }
