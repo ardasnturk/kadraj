@@ -31,6 +31,8 @@ open build/Kadraj.app
 
 The script builds a release binary with SwiftPM, wraps it in `build/Kadraj.app` and code-signs it. It uses your first *Apple Development* identity, or ad-hoc signing when you have none. Set `SIGN_IDENTITY` to choose an identity. A stable identity matters because macOS ties the Screen Recording permission to the signature. With ad-hoc signing you'll have to grant it again after every rebuild.
 
+To publish a release, bump `CFBundleShortVersionString` in `Resources/Info.plist` and run `./scripts/release.sh`. It signs with your *Developer ID Application* identity, builds and notarizes `build/Kadraj-<version>.dmg` (using the `kadraj-notary` notarytool profile, override with `NOTARY_PROFILE`), then tags the commit and uploads the DMG as a GitHub release. Set `SKIP_PUBLISH=1` to only build the DMG.
+
 For development you can also open `Package.swift` in Xcode. These flags help when working on the UI:
 
 ```bash
@@ -82,7 +84,8 @@ Resources/   Info.plist
 - [ ] Magnifier loupe in area capture
 - [ ] Combine multiple captures and paste images as layers
 - [ ] Localization
-- [ ] Notarized releases and a Homebrew cask
+- [x] Notarized releases
+- [ ] Homebrew cask
 
 ## Contributing
 

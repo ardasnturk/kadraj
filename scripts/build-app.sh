@@ -17,6 +17,9 @@ cp Resources/Info.plist "$APP/Contents/Info.plist"
 
 # A stable signing identity keeps the Screen Recording permission across rebuilds.
 IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning | awk -F'"' '/Apple Development/ { print $2; exit }')}"
-codesign --force --options runtime --sign "${IDENTITY:--}" "$APP"
+# Notarization requires a secure timestamp on Developer ID signatures.
+TIMESTAMP=()
+[[ "$IDENTITY" == "Developer ID Application"* ]] && TIMESTAMP=(--timestamp)
+codesign --force --options runtime "${TIMESTAMP[@]}" --sign "${IDENTITY:--}" "$APP"
 
 echo "Built $APP (signed with: ${IDENTITY:-ad-hoc})"
