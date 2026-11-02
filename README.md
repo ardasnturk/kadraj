@@ -1,39 +1,118 @@
-# Kadraj
+<p align="center">
+  <img src="Resources/AppIcon.png" width="128" alt="Kadraj icon">
+</p>
 
-A fast, native, open-source screenshot tool for macOS. Capture an area, a window or the whole screen, then crop with pixel precision and annotate before copying or saving.
+<h1 align="center">Kadraj</h1>
 
-*Kadraj* is Turkish for "frame" (as in framing a shot).
+<p align="center">
+  A fast, native, open-source screenshot tool for macOS.<br>
+  Capture an area, a window or the whole screen, mark it up, and share it in seconds.
+</p>
+
+<p align="center">
+  <a href="https://github.com/ardasnturk/kadraj/releases/latest"><img src="https://img.shields.io/github/v/release/ardasnturk/kadraj?label=release&color=6A4CF0" alt="Latest release"></a>
+  <a href="https://github.com/ardasnturk/kadraj/releases"><img src="https://img.shields.io/github/downloads/ardasnturk/kadraj/total?color=6A4CF0" alt="Downloads"></a>
+  <img src="https://img.shields.io/badge/macOS-14%2B-6A4CF0" alt="macOS 14 or later">
+  <img src="https://img.shields.io/badge/Swift-AppKit%20%2B%20SwiftUI-F05138" alt="Swift">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/ardasnturk/kadraj?color=6A4CF0" alt="MIT license"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ardasnturk/kadraj/releases/latest"><b>Download the latest release</b></a>
+  ·
+  <a href="#features">Features</a>
+  ·
+  <a href="#keyboard-shortcuts">Shortcuts</a>
+  ·
+  <a href="#building-from-source">Build from source</a>
+</p>
+
+<p align="center">
+  <img src="docs/images/welcome.png" width="560" alt="Kadraj's welcome guide">
+</p>
+
+*Kadraj* is Turkish for "frame", as in framing a shot.
 
 ## Features
 
-- **Capture** area (⌘⇧2), window (press Space in area mode), or full screen (⌘⇧1). The screen is frozen while you select. Repeat the last area with one shortcut, or capture the full screen after a 3-second delay.
-- **Floating preview** after every capture: drag the image straight into another app, or edit, copy, save, read its text, or pin it with one click. It hides itself after a few seconds (pauses while hovered).
-- **Text and QR codes (OCR)**: select an area and its text, or the QR code's contents, lands on the clipboard. Runs on device with Apple's Vision framework.
-- **Pin** screenshots above all windows, right where they were captured. Scroll to resize, ⌥-scroll to fade, double-click or Esc to close, right-click for more.
-- **Settings**: record your own shortcuts, choose what happens after a capture (preview, editor or clipboard), auto-copy/auto-save, preview duration, save folder, PNG or JPEG, launch at login.
-- **Pixel-precise selection** with free zoom and pan. Arrow keys nudge the selection by 1 px (⇧ for 10 px), ⌘+arrows resize it, and Return crops.
-- **Annotate** with arrows, rectangles, ovals, text labels, pixelation and numbered steps.
-- **Copy** (⌘C) or **save** (⌘S) the result. When a selection is active, only the selection is exported. Retina captures keep their DPI.
-- Undo and redo.
-- Small, with no dependencies: Swift, AppKit and ScreenCaptureKit.
+**Capture**
+- Area, window or full screen from a global shortcut. The screen freezes while you select.
+- Pick a window with Space, take the whole display with Return, hold ⇧ for a square.
+- Repeat the last area with one key, or capture the full screen after a 3-second countdown.
 
-## Requirements
+**Act on it right away**
+- A floating preview appears after every capture. Drag it straight into another app, or edit, copy, save, pin or read its text with one click.
+- Pin screenshots above every window, right where you took them. Scroll to resize, ⌥-scroll to fade.
+- Copy the text or a QR code's contents from any area (OCR). Recognition runs on your Mac with Apple's Vision framework.
 
-- macOS 14 Sonoma or later
-- Xcode 16 or later (to build)
+**Mark it up**
+- Arrows, rectangles, ovals, text, numbered steps and pixelation.
+- Pixel-precise cropping with free zoom and pan. Arrow keys nudge the selection by 1 px.
+- Copy (⌘C) or save (⌘S) as PNG or JPEG. Retina captures keep their resolution.
 
-## Build
+**Feels at home on the Mac**
+- A welcome guide sets up the Screen Recording permission and your shortcuts, then shows you around.
+- Updates arrive automatically through [Sparkle](https://sparkle-project.org), signed and notarized.
+- Lives in the menu bar, launches at login if you like, and stays out of the way.
+
+## Installation
+
+1. Download `Kadraj-<version>.dmg` from the [latest release](https://github.com/ardasnturk/kadraj/releases/latest).
+2. Open it and drag **Kadraj** into **Applications**.
+3. Launch Kadraj. The welcome guide walks you through the Screen Recording permission and your shortcuts.
+
+Kadraj checks for updates on its own. You can also choose **Check for Updates…** from the menu bar icon, or turn automatic checks off in **Settings › General**.
+
+> [!NOTE]
+> macOS only applies the Screen Recording permission after Kadraj restarts. The guide notices when you switch it on and offers to restart for you.
+
+## Keyboard shortcuts
+
+You can change every global shortcut in **Settings › Shortcuts** or in the welcome guide.
+
+| Where | Key | Action |
+|---|---|---|
+| Anywhere | ⇧⌘2 | Capture an area |
+| Anywhere | ⇧⌘1 | Capture the full screen |
+| Anywhere | *your choice* | Capture a window, repeat the last area, capture text |
+| Selecting | Space · Return · ⇧ | Window mode · whole display · square selection |
+| Selecting | Esc | Cancel |
+
+<details>
+<summary><b>Editor shortcuts</b></summary>
+
+| Key | Action |
+|---|---|
+| V A R O T B N | Select and crop, arrow, rectangle, oval, text, pixelate, step |
+| B with a selection | Pixelate the selection |
+| ← → ↑ ↓ (⇧, ⌘) | Nudge the selection or object (by 10 px, resize) |
+| Return / Esc | Crop / clear the selection, then close |
+| ⌘0 ⌘1 ⌘= ⌘- | Actual size, fit, zoom in, zoom out |
+| Pinch, ⌘-scroll, mouse wheel | Zoom |
+| Space-drag, right-drag, trackpad scroll | Pan |
+| ⌘C ⌘S ⇧⌘S | Copy, save, save as |
+| ⌥⌘C ⌘P | Copy text (OCR), pin to screen |
+| ⌘Z ⇧⌘Z | Undo, redo |
+
+</details>
+
+## Building from source
+
+Requires macOS 14 or later and Xcode 16 or later.
 
 ```bash
+git clone https://github.com/ardasnturk/kadraj.git
+cd kadraj
 ./scripts/build-app.sh
 open build/Kadraj.app
 ```
 
-The script builds a release binary with SwiftPM, wraps it in `build/Kadraj.app` and code-signs it. It uses your first *Developer ID Application* identity, then *Apple Development*, or ad-hoc signing when you have neither. Set `SIGN_IDENTITY` to choose an identity. A stable identity matters because macOS ties the Screen Recording permission to the signature. With ad-hoc signing you'll have to grant it again after every rebuild.
+`build-app.sh` builds a release binary with SwiftPM, wraps it in `build/Kadraj.app` with Sparkle embedded, and code-signs it. It picks your first *Developer ID Application* identity, then *Apple Development*, and falls back to ad-hoc signing. Set `SIGN_IDENTITY` to choose one.
 
-To publish a release, bump `CFBundleShortVersionString` in `Resources/Info.plist` and run `./scripts/release.sh`. It signs with your *Developer ID Application* identity, builds and notarizes `build/Kadraj-<version>.dmg` (using the `kadraj-notary` notarytool profile, override with `NOTARY_PROFILE`), then tags the commit and uploads the DMG as a GitHub release. Set `SKIP_PUBLISH=1` to only build the DMG. The DMG window is laid out with [dmgbuild](https://github.com/dmgbuild/dmgbuild) (`pipx install dmgbuild`); its background comes from `scripts/make-dmg-background.swift`. The app icon is drawn by `scripts/make-icon.swift`, which writes `Resources/AppIcon.icns`.
+> [!TIP]
+> Keep the signing identity the same from build to build. macOS ties the Screen Recording permission to the signature, so with ad-hoc signing you grant it again after every rebuild.
 
-For development you can also open `Package.swift` in Xcode. These flags help when working on the UI:
+You can also open `Package.swift` in Xcode. These flags jump straight to a piece of UI:
 
 ```bash
 build/Kadraj.app/Contents/MacOS/Kadraj --open path/to/image.png     # editor
@@ -42,56 +121,62 @@ build/Kadraj.app/Contents/MacOS/Kadraj --settings                   # settings w
 build/Kadraj.app/Contents/MacOS/Kadraj --onboarding                 # welcome guide
 ```
 
-On the first capture, macOS asks for **Screen Recording** permission. Grant it in System Settings › Privacy & Security › Screen & System Audio Recording.
+<details>
+<summary><b>Publishing a release</b></summary>
 
-## Shortcuts
+1. Bump `CFBundleShortVersionString` and `CFBundleVersion` in `Resources/Info.plist`, and commit.
+2. Run `./scripts/release.sh`.
 
-| Where | Key | Action |
+The script:
+- signs the app with your *Developer ID Application* identity,
+- builds `build/Kadraj-<version>.dmg` and notarizes it with the `kadraj-notary` notarytool profile,
+- writes `build/appcast.xml` signed with the Sparkle EdDSA key stored in your Keychain under the `kadraj` account,
+- tags the commit and uploads both files as a GitHub release.
+
+The app's feed URL points at `releases/latest/download/appcast.xml`, so each release replaces the previous feed.
+
+| Variable | Default | Purpose |
 |---|---|---|
-| Global | ⌘⇧2 | Capture area |
-| Global | ⌘⇧1 | Capture full screen |
-| Global | set in Settings | Capture window, repeat last area, capture text |
-| Area capture | Space | Toggle window mode |
-| Area capture | Return | Capture the whole display |
-| Area capture | ⇧ while dragging | Square selection |
-| Editor | V A R O T B N | Select/crop, arrow, rectangle, oval, text, pixelate, step |
-| Editor | B with a selection | Pixelate the selection |
-| Editor | ← → ↑ ↓ (⇧, ⌘) | Nudge (10 px, resize) the selection or the selected object |
-| Editor | Return / Esc | Crop / clear selection, then close |
-| Editor | ⌘0 ⌘1 ⌘= ⌘- | Actual size, fit, zoom in, zoom out |
-| Editor | Pinch, ⌘-scroll, mouse wheel | Zoom |
-| Editor | Space-drag, right-drag, trackpad scroll | Pan |
-| Editor | ⌘C ⌘S ⇧⌘S | Copy, save, save as |
-| Editor | ⌥⌘C ⌘P | Copy text (OCR), pin to screen |
+| `NOTARY_PROFILE` | `kadraj-notary` | notarytool Keychain profile |
+| `SPARKLE_ACCOUNT` | `kadraj` | Keychain account of the Sparkle key |
+| `SIGN_IDENTITY` | first Developer ID | Code signing identity |
+| `SKIP_PUBLISH` | unset | Build the DMG and appcast without tagging or releasing |
+
+The DMG window is laid out with [dmgbuild](https://github.com/dmgbuild/dmgbuild) (`pipx install dmgbuild`), and its background is drawn by `scripts/make-dmg-background.swift`. The app icon comes from `scripts/make-icon.swift`, which writes `Resources/AppIcon.icns`.
+
+</details>
 
 ## Project layout
 
 ```
 Sources/Kadraj/
-  App/       App delegate, menu bar item, global hot keys, shortcuts, settings storage, toasts
-  Capture/   ScreenCaptureKit capture, area/window selection overlay, text recognition
-  Editor/    Document model, renderer, canvas view and editor window
-  Preview/   Floating capture preview and pinned screenshots
-  Settings/  Settings window (SwiftUI) and the shortcut recorder
-scripts/     build-app.sh
-Resources/   Info.plist
+  App/         App delegate, menu bar item, hot keys, permissions, updater, settings storage, toasts
+  Capture/     ScreenCaptureKit capture, area and window selection, text recognition
+  Editor/      Document model, renderer, canvas and editor window
+  Onboarding/  Welcome guide
+  Preview/     Floating capture preview and pinned screenshots
+  Settings/    Settings window and the shortcut recorder
+scripts/       Build, release, icon and DMG background scripts
+Resources/     Info.plist and the app icon
 ```
 
 ## Roadmap
 
+- [x] Notarized releases
+- [x] Automatic updates
+- [x] Welcome guide
 - [ ] Color picker, ruler and contrast checker
 - [ ] Backdrop (gradient background, padding, rounded corners, shadow)
 - [ ] Scrolling capture
 - [ ] Magnifier loupe in area capture
 - [ ] Combine multiple captures and paste images as layers
 - [ ] Localization
-- [x] Notarized releases
 - [ ] Homebrew cask
 
 ## Contributing
 
-Issues and pull requests are welcome. Please keep the app small and dependency-free, and match the style of the surrounding code.
+Issues and pull requests are welcome. Please keep Kadraj small, avoid new dependencies unless they clearly pay for themselves, and match the style of the surrounding code.
 
 ## License
 
-[MIT](LICENSE)
+Kadraj is released under the [MIT License](LICENSE).

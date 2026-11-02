@@ -32,7 +32,7 @@ struct SettingsView: View {
             ShortcutSettingsView()
                 .tabItem { Label("Shortcuts", systemImage: "keyboard") }
         }
-        .frame(width: 520, height: 430)
+        .frame(width: 520, height: 610)
     }
 }
 
@@ -82,6 +82,8 @@ private struct GeneralSettingsView: View {
             Section("System") {
                 LaunchAtLoginToggle()
             }
+
+            UpdateSettingsSection()
         }
         .formStyle(.grouped)
     }
@@ -98,6 +100,26 @@ private struct GeneralSettingsView: View {
             saveDirectory = url
         }
     }
+}
+
+private struct UpdateSettingsSection: View {
+    @ObservedObject private var updater = Updater.shared
+
+    var body: some View {
+        Section("Updates") {
+            Toggle("Automatically check for updates", isOn: Binding(
+                get: { updater.automaticallyChecksForUpdates },
+                set: { updater.automaticallyChecksForUpdates = $0 }))
+            LabeledContent("Version \(Bundle.main.shortVersion)") {
+                Button("Check Now", action: updater.checkForUpdates)
+                    .disabled(!updater.canCheckForUpdates)
+            }
+        }
+    }
+}
+
+private extension Bundle {
+    var shortVersion: String { object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "–" }
 }
 
 /// Also used by the welcome guide.

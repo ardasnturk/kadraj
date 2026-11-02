@@ -12,8 +12,9 @@ BIN_DIR="$(swift build -c "$CONFIG" --show-bin-path)"
 
 APP="build/Kadraj.app"
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
 cp "$BIN_DIR/Kadraj" "$APP/Contents/MacOS/Kadraj"
+ditto "$BIN_DIR/Sparkle.framework" "$APP/Contents/Frameworks/Sparkle.framework"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
@@ -25,6 +26,16 @@ IDENTITY="${IDENTITY:-$(awk -F'"' '/Apple Development/ { print $2; exit }' <<<"$
 # Notarization requires a secure timestamp on Developer ID signatures.
 TIMESTAMP="--timestamp=none"
 [[ "$IDENTITY" == "Developer ID Application"* ]] && TIMESTAMP="--timestamp"
-codesign --force --options runtime "$TIMESTAMP" --sign "${IDENTITY:--}" "$APP"
+sign() { codesign --force --options runtime "$TIMESTAMP" --sign "${IDENTITY:--}" "$@"; }
+
+# Sparkle's helpers are signed inside out, as its documentation describes; the downloader keeps
+# its entitlements.
+SPARKLE="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
+sign "$SPARKLE/XPCServices/Installer.xpc"
+sign --preserve-metadata=entitlements "$SPARKLE/XPCServices/Downloader.xpc"
+sign "$SPARKLE/Autoupdate"
+sign "$SPARKLE/Updater.app"
+sign "$APP/Contents/Frameworks/Sparkle.framework"
+sign "$APP"
 
 echo "Built $APP (signed with: ${IDENTITY:-ad-hoc})"

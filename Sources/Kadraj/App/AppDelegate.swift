@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
 
     private var statusItem: NSStatusItem!
     private var shortcutItems: [ShortcutAction: NSMenuItem] = [:]
+    private var updateItem: NSMenuItem!
     private let hotKeys = HotKeyManager()
     private var hotKeysSuspended = false
     private var selection: AreaSelectionController?
@@ -17,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Settings.registerDefaults()
+        _ = Updater.shared
         NSApp.mainMenu = MainMenu.build()
         previews.handler = self
         setUpStatusItem()
@@ -82,6 +84,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
         menu.addItem(.separator())
         menu.addItem(menuItem("Settings…", #selector(openSettings(_:)), key: ","))
         menu.addItem(menuItem("Welcome Guide", #selector(openOnboarding)))
+        updateItem = menuItem("Check for Updates…", #selector(checkForUpdates(_:)))
+        menu.addItem(updateItem)
         menu.addItem(menuItem("About Kadraj", #selector(showAbout)))
         menu.addItem(menuItem("Quit Kadraj", #selector(NSApplication.terminate(_:)), key: "q", target: NSApp))
         statusItem.menu = menu
@@ -94,6 +98,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
+        if let version = Updater.shared.pendingVersion {
+            updateItem.title = "Update to Kadraj \(version)…"
+            updateItem.image = NSImage(systemSymbolName: "arrow.down.circle.fill", accessibilityDescription: nil)
+        } else {
+            updateItem.title = "Check for Updates…"
+            updateItem.image = nil
+        }
         for (action, item) in shortcutItems {
             let shortcut = Settings.shortcut(for: action)
             item.keyEquivalent = shortcut?.keyEquivalent ?? ""
@@ -311,6 +322,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
 
     @objc func openSettings(_ sender: Any?) {
         SettingsWindowController.shared.present()
+    }
+
+    @objc func checkForUpdates(_ sender: Any?) {
+        Updater.shared.checkForUpdates()
     }
 
     @objc private func openOnboarding() {

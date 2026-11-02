@@ -17,9 +17,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.2.0</string>
+	<string>0.3.0</string>
 	<key>CFBundleVersion</key>
-	<string>3</string>
+	<string>4</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
 	<key>LSUIElement</key>
@@ -32,6 +32,12 @@
 	<string>NSApplication</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>MIT License</string>
+	<key>SUFeedURL</key>
+	<string>https://github.com/ardasnturk/kadraj/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>yKG/kglE/io8pqnDD1pB78iSetRsslu8Gh9FzhLUQ6M=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

@@ -25,6 +25,7 @@ enum MainMenu {
 
         _ = submenu("Kadraj", [
             item("About Kadraj", #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
+            item("Check for Updates…", #selector(AppDelegate.checkForUpdates(_:))),
             .separator(),
             item("Settings…", #selector(AppDelegate.openSettings(_:)), ","),
             .separator(),
