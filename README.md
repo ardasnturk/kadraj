@@ -39,6 +39,7 @@ For development you can also open `Package.swift` in Xcode. These flags help whe
 build/Kadraj.app/Contents/MacOS/Kadraj --open path/to/image.png     # editor
 build/Kadraj.app/Contents/MacOS/Kadraj --preview path/to/image.png  # floating preview
 build/Kadraj.app/Contents/MacOS/Kadraj --settings                   # settings window
+build/Kadraj.app/Contents/MacOS/Kadraj --onboarding                 # welcome guide
 ```
 
 On the first capture, macOS asks for **Screen Recording** permission. Grant it in System Settings › Privacy & Security › Screen & System Audio Recording.

@@ -43,8 +43,6 @@ private struct GeneralSettingsView: View {
     @AppStorage(Settings.Keys.previewDuration) private var previewDuration = 6.0
     @AppStorage(Settings.Keys.imageFormat) private var imageFormat = ImageFormat.png
     @State private var saveDirectory = Settings.saveDirectory
-    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
-    @State private var loginError: String?
 
     var body: some View {
         Form {
@@ -82,11 +80,7 @@ private struct GeneralSettingsView: View {
             }
 
             Section("System") {
-                Toggle("Launch at login", isOn: $launchAtLogin)
-                    .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
-                if let loginError {
-                    Text(loginError).font(.caption).foregroundStyle(.red)
-                }
+                LaunchAtLoginToggle()
             }
         }
         .formStyle(.grouped)
@@ -102,6 +96,20 @@ private struct GeneralSettingsView: View {
         if panel.runModal() == .OK, let url = panel.url {
             Settings.saveDirectory = url
             saveDirectory = url
+        }
+    }
+}
+
+/// Also used by the welcome guide.
+struct LaunchAtLoginToggle: View {
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var loginError: String?
+
+    var body: some View {
+        Toggle("Launch at login", isOn: $launchAtLogin)
+            .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
+        if let loginError {
+            Text(loginError).font(.caption).foregroundStyle(.red)
         }
     }
 

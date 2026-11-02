@@ -33,6 +33,8 @@ enum Settings {
         static let autoSave = "autoSave"
         static let previewDuration = "previewDuration"
         static let imageFormat = "imageFormat"
+        static let onboardingCompleted = "onboardingCompleted"
+        static let onboardingStep = "onboardingStep"
         static func shortcut(_ action: ShortcutAction) -> String { "shortcut.\(action.rawValue)" }
     }
 
@@ -71,6 +73,18 @@ enum Settings {
 
     static var imageFormat: ImageFormat {
         defaults.string(forKey: Keys.imageFormat).flatMap(ImageFormat.init) ?? .png
+    }
+
+    /// Whether the welcome guide has been finished or closed. Until then it opens at every launch.
+    static var onboardingCompleted: Bool {
+        get { defaults.bool(forKey: Keys.onboardingCompleted) }
+        set { defaults.set(newValue, forKey: Keys.onboardingCompleted) }
+    }
+
+    /// The guide page to come back to, so a restart for the permission resumes where it left off.
+    static var onboardingStep: Int {
+        get { defaults.integer(forKey: Keys.onboardingStep) }
+        set { defaults.set(newValue, forKey: Keys.onboardingStep) }
     }
 
     /// The user's shortcut, the default when never changed, or `nil` when cleared.

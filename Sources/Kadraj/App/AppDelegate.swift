@@ -31,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
         registerHotKeys()
 
         // Development shortcuts: `--open <file>` opens the editor, `--preview <file>` shows the
-        // floating preview, `--settings` opens the settings window.
+        // floating preview, `--settings` opens the settings window, `--onboarding` the welcome guide.
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--open"), i + 1 < args.count {
             openImage(at: URL(fileURLWithPath: args[i + 1]))
@@ -42,6 +42,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
         }
         if args.contains("--settings") {
             openSettings(nil)
+        }
+
+        if !Settings.onboardingCompleted || args.contains("--onboarding") {
+            OnboardingWindowController.shared.present()
         }
     }
 
@@ -77,6 +81,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
         menu.addItem(menuItem("Open Image from Clipboard", #selector(pasteImage(_:))))
         menu.addItem(.separator())
         menu.addItem(menuItem("Settings…", #selector(openSettings(_:)), key: ","))
+        menu.addItem(menuItem("Welcome Guide", #selector(openOnboarding)))
         menu.addItem(menuItem("About Kadraj", #selector(showAbout)))
         menu.addItem(menuItem("Quit Kadraj", #selector(NSApplication.terminate(_:)), key: "q", target: NSApp))
         statusItem.menu = menu
@@ -142,8 +147,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
 
     private func startCapture(_ mode: CaptureMode) {
         guard selection == nil else { return }
+        // Without the permission, ScreenCaptureKit would raise its own system prompt on every try;
+        // the welcome guide explains what to do instead.
+        guard Permissions.canCapture else {
+            OnboardingWindowController.shared.present(at: .permission)
+            return
+        }
         Task { [self] in
-            guard await Permissions.ensureScreenRecording() else { return }
             do {
                 let content = try await ScreenCapturer.shareableContent()
                 let shots = try await ScreenCapturer.captureDisplays(content)
@@ -301,6 +311,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
 
     @objc func openSettings(_ sender: Any?) {
         SettingsWindowController.shared.present()
+    }
+
+    @objc private func openOnboarding() {
+        OnboardingWindowController.shared.present(at: .welcome)
     }
 
     @objc private func showAbout() {
