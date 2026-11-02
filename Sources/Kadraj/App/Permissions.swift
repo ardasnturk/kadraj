@@ -13,7 +13,6 @@ enum ScreenRecordingStatus {
 @MainActor
 enum Permissions {
     static let checkArgument = "--check-screen-recording"
-    private static let requestedKey = "requestedScreenRecording"
 
     static var canCapture: Bool { CGPreflightScreenCaptureAccess() }
 
@@ -22,15 +21,14 @@ enum Permissions {
         return await systemAllowsCapture() ? .needsRestart : .denied
     }
 
-    /// Shows the system prompt the first time, which also adds Kadraj to the list in System Settings.
-    /// After that macOS no longer prompts, so it opens System Settings instead.
-    static func requestScreenRecording() {
-        if UserDefaults.standard.bool(forKey: requestedKey) {
-            openSystemSettings()
-        } else {
-            UserDefaults.standard.set(true, forKey: requestedKey)
-            CGRequestScreenCaptureAccess()
-        }
+    /// Asks macOS for the permission, which also puts Kadraj in the list in System Settings. That
+    /// entry is gone after a reset or on a new Mac, so the request is made every time. macOS shows
+    /// its prompt (with its own button to System Settings) only when it hasn't asked before; when
+    /// no prompt takes focus, Kadraj opens System Settings itself.
+    static func requestScreenRecording() async {
+        CGRequestScreenCaptureAccess()
+        try? await Task.sleep(for: .milliseconds(800))
+        if NSApp.isActive { openSystemSettings() }
     }
 
     static func openSystemSettings() {

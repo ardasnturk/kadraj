@@ -78,7 +78,7 @@ final class OnboardingModel: ObservableObject {
 
     func requestPermission() {
         requested = true
-        Permissions.requestScreenRecording()
+        Task { await Permissions.requestScreenRecording() }
     }
 
     /// Keeps `permission` current while the permission page is open, as the user flips the switch
@@ -275,7 +275,7 @@ private struct PermissionPage: View {
             .frame(maxWidth: 440)
 
             if model.permission == .denied {
-                Text("Already switched on but still asked? Remove Kadraj from the list with the − button, then add it again.")
+                Text("Kadraj missing from the list? Click + under it and choose Kadraj in Applications. Switched on but still asked? Remove it with −, then add it again.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
