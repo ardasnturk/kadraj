@@ -141,8 +141,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Captur
     }
 
     private func startCapture(_ mode: CaptureMode) {
-        guard selection == nil, Permissions.ensureScreenRecording() else { return }
+        guard selection == nil else { return }
         Task { [self] in
+            guard await Permissions.ensureScreenRecording() else { return }
             do {
                 let content = try await ScreenCapturer.shareableContent()
                 let shots = try await ScreenCapturer.captureDisplays(content)

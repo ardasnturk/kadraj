@@ -3,11 +3,16 @@
 #   NOTARY_PROFILE="..." notarytool keychain profile (default: kadraj-notary)
 #   SIGN_IDENTITY="..."  codesigning identity (default: first "Developer ID Application" identity)
 #   SKIP_PUBLISH=1       build and notarize the DMG without tagging or releasing
+# Needs dmgbuild (pipx install dmgbuild) to lay out the DMG window.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 NOTARY_PROFILE="${NOTARY_PROFILE:-kadraj-notary}"
 IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning | awk -F'"' '/Developer ID Application/ { print $2; exit }')}"
+if ! command -v dmgbuild >/dev/null; then
+  echo "dmgbuild not found; install it with: pipx install dmgbuild" >&2
+  exit 1
+fi
 if [ -z "$IDENTITY" ]; then
   echo "No Developer ID Application identity found." >&2
   exit 1
@@ -30,13 +35,9 @@ fi
 SIGN_IDENTITY="$IDENTITY" ./scripts/build-app.sh
 
 DMG="build/Kadraj-$VERSION.dmg"
-STAGING="build/dmg"
-rm -rf "$STAGING" "$DMG"
-mkdir -p "$STAGING"
-cp -R build/Kadraj.app "$STAGING/"
-ln -s /Applications "$STAGING/Applications"
-hdiutil create -volname "Kadraj" -srcfolder "$STAGING" -ov -format UDZO "$DMG"
-rm -rf "$STAGING"
+rm -f "$DMG"
+swift scripts/make-dmg-background.swift build/dmg-background.tiff
+dmgbuild -s scripts/dmg-settings.py -D app=build/Kadraj.app -D background=build/dmg-background.tiff Kadraj "$DMG"
 codesign --force --sign "$IDENTITY" --timestamp "$DMG"
 
 xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait

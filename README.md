@@ -29,9 +29,9 @@ A fast, native, open-source screenshot tool for macOS. Capture an area, a window
 open build/Kadraj.app
 ```
 
-The script builds a release binary with SwiftPM, wraps it in `build/Kadraj.app` and code-signs it. It uses your first *Apple Development* identity, or ad-hoc signing when you have none. Set `SIGN_IDENTITY` to choose an identity. A stable identity matters because macOS ties the Screen Recording permission to the signature. With ad-hoc signing you'll have to grant it again after every rebuild.
+The script builds a release binary with SwiftPM, wraps it in `build/Kadraj.app` and code-signs it. It uses your first *Developer ID Application* identity, then *Apple Development*, or ad-hoc signing when you have neither. Set `SIGN_IDENTITY` to choose an identity. A stable identity matters because macOS ties the Screen Recording permission to the signature. With ad-hoc signing you'll have to grant it again after every rebuild.
 
-To publish a release, bump `CFBundleShortVersionString` in `Resources/Info.plist` and run `./scripts/release.sh`. It signs with your *Developer ID Application* identity, builds and notarizes `build/Kadraj-<version>.dmg` (using the `kadraj-notary` notarytool profile, override with `NOTARY_PROFILE`), then tags the commit and uploads the DMG as a GitHub release. Set `SKIP_PUBLISH=1` to only build the DMG.
+To publish a release, bump `CFBundleShortVersionString` in `Resources/Info.plist` and run `./scripts/release.sh`. It signs with your *Developer ID Application* identity, builds and notarizes `build/Kadraj-<version>.dmg` (using the `kadraj-notary` notarytool profile, override with `NOTARY_PROFILE`), then tags the commit and uploads the DMG as a GitHub release. Set `SKIP_PUBLISH=1` to only build the DMG. The DMG window is laid out with [dmgbuild](https://github.com/dmgbuild/dmgbuild) (`pipx install dmgbuild`); its background comes from `scripts/make-dmg-background.swift`. The app icon is drawn by `scripts/make-icon.swift`, which writes `Resources/AppIcon.icns`.
 
 For development you can also open `Package.swift` in Xcode. These flags help when working on the UI:
 
